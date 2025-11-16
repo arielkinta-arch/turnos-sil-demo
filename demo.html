@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda de turnos - Demo Belleza</title>
+
+  <!-- CSS TODO EN EL MISMO ARCHIVO -->
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #ffe6f2, #f4f4f8);
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+    }
+
+    .app-container {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .app-header h1 {
+      font-size: 1.9rem;
+      margin-bottom: .4rem;
+    }
+
+    .app-header p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 1.5rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .subtle {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 1rem;
+    }
+
+    /* SERVICIOS: uñitas y ojitos */
+
+    .servicios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .servicio-card {
+      position: relative;
+      padding: 0.9rem 0.9rem 0.8rem;
+      border-radius: 16px;
+      border: 1px solid #f3d2e5;
+      background: linear-gradient(135deg, #fff7fb, #ffeef7);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+    }
+
+    .servicio-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 122, 184, 0.25);
+      border-color: #ff7ab8;
+    }
+
+    .servicio-card.activo {
+      border-color: #ff4f9c;
+      box-shadow: 0 10px 25px rgba(255, 79, 156, 0.32);
+    }
+
+    .servicio-icono {
+      font-size: 1.6rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .servicio-titulo {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .servicio-detalle {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    /* FECHA */
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+      color: #444;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      font-size: 0.95rem;
+      outline: none;
+      background: #fafafa;
+      transition: border 0.15s, box-shadow 0.15s, background-color 0.15s;
+    }
+
+    input[type="date"]:focus {
+      border-color: #ff7ab8;
+      box-shadow: 0 0 0 3px rgba(255, 122, 184, 0.18);
+      background-color: #fff;
+    }
+
+    .note {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    /* SLOTS (cubitos de horario) */
+
+    .slots-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.4rem 0 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .slots-sub {
+      font-size: 0.8rem;
+      color: #777;
+      margin-bottom: .4rem;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+
+    .slot-btn {
+      border-radius: 14px;
+      border: 1px solid #f0d3e6;
+      padding: 0.6rem 0.5rem;
+      background: #fff7fb;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      transition: background 0.15s, box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .slot-btn span.hora {
+      font-weight: 600;
+    }
+
+    .slot-btn span.turno-label {
+      font-size: 0.75rem;
+      color: #777;
+    }
+
+    .slot-btn:hover {
+      background: #ffe4f4;
+      border-color: #ff7ab8;
+      box-shadow: 0 8px 18px rgba(255, 122, 184, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .slot-btn.seleccionado {
+      background: #ff7ab8;
+      border-color: #ff4f9c;
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(255, 79, 156, 0.45);
+    }
+
+    .slot-btn.seleccionado span.turno-label {
+      color: #ffe6f6;
+    }
+
+    .slot-btn.ocupado {
+      background: #f3f3f3;
+      border-color: #dddddd;
+      color: #aaa;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* BOTÓN CONFIRMAR */
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.9rem;
+      padding: 0.7rem 1.3rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ff7ab8, #ffafbd);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(255, 122, 184, 0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(255, 122, 184, 0.45);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 12px rgba(255, 122, 184, 0.3);
+    }
+
+    .btn-primary .emoji {
+      font-size: 1.15rem;
+    }
+
+    /* PANEL DERECHO: confirmación y agenda */
+
+    .resumen {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .highlight-box {
+      background: #fff6fb;
+      border-left: 3px solid #ff7ab8;
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .lista-turnos {
+      list-style: none;
+      margin-top: 0.6rem;
+    }
+
+    .lista-turnos li {
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      background: #fdfdfd;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .lista-turnos li + li {
+      margin-top: 0.4rem;
+    }
+
+    .turno-header {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 600;
+    }
+
+    .turno-header span.icono {
+      font-size: 1.1rem;
+    }
+
+    .turno-fecha {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .pill-estado {
+      display: inline-block;
+      margin-top: 0.15rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      background: #e6ffe9;
+      color: #208c35;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>Agenda de turnos (Demo)</h1>
+      <p>Selector de turnos en “cubitos”. Las clientas solo ven turno confirmado si pagan (esto es demo visual).</p>
+    </header>
+
+    <main class="app-grid">
+      <!-- COLUMNA IZQUIERDA: elección -->
+      <section class="card">
+        <h2>1. Elegí servicio</h2>
+        <p class="subtle">Cada servicio tiene su iconito: 💅 uñitas, 🦶 pies, 👁️ pestañas.</p>
+
+        <!-- SERVICIOS -->
+        <div class="servicios-grid">
+          <button class="servicio-card" data-servicio="unas">
+            <span class="servicio-icono">💅</span>
+            <span class="servicio-titulo">Uñas</span>
+            <span class="servicio-detalle">Duración aprox: 2 horas</span>
+          </button>
+
+          <button class="servicio-card" data-servicio="pestanas">
+            <span class="servicio-icono">👁️</span>
+            <span class="servicio-titulo">Pestañas</span>
+            <span class="servicio-detalle">Duración aprox: 3 horas</span>
+          </button>
+
+          <button class="servicio-card" data-servicio="pies">
+            <span class="servicio-icono">💅🦶</span>
+            <span class="servicio-titulo">Pies</span>
+            <span class="servicio-detalle">Duración aprox: 2 horas</span>
+          </button>
+        </div>
+
+        <!-- FECHA -->
+        <div class="form-group">
+          <label for="inputFecha">2. Elegí fecha (martes a sábado)</label>
+          <input type="date" id="inputFecha" />
+          <p class="note">
+            Solo se atiende de <strong>martes a sábado</strong>. Lunes y domingo no se toman turnos.
+          </p>
+        </div>
+
+        <!-- SLOTS HORARIOS -->
+        <div class="slots-title">
+          <span>3. Elegí horario</span>
+        </div>
+        <p class="slots-sub">2 turnos a la mañana, 2 turnos a la tarde.</p>
+
+        <div class="slots-grid" id="slotsGrid">
+          <button class="slot-btn" data-hora="08:00">
+            <span class="hora">08:00 – 10:00</span>
+            <span class="turno-label">Mañana temprano</span>
+          </button>
+          <button class="slot-btn" data-hora="11:00">
+            <span class="hora">11:00 – 13:00</span>
+            <span class="turno-label">Mañana</span>
+          </button>
+          <button class="slot-btn" data-hora="14:00">
+            <span class="hora">14:00 – 16:00</span>
+            <span class="turno-label">Tarde</span>
+          </button>
+          <button class="slot-btn" data-hora="17:00">
+            <span class="hora">17:00 – 19:00</span>
+            <span class="turno-label">Tarde / última hora</span>
+          </button>
+        </div>
+
+        <button id="btnReservar" class="btn-primary">
+          <span class="emoji">✨</span>
+          <span>Simular turno confirmado</span>
+        </button>
+
+        <p class="note">
+          En la versión real, este botón solo se habilitaría después del pago. Tu amiga después mira su Google Calendar.
+        </p>
+      </section>
+
+      <!-- COLUMNA DERECHA: resumen + agenda -->
+      <section class="card">
+        <h2>Resumen de la reserva (demo)</h2>
+        <p id="textoResumen" class="resumen">
+          Todavía no hay ningún turno seleccionado.
+        </p>
+
+        <div id="bloqueMensajes" style="display:none;">
+          <h3>Mensaje para enviar a la clienta</h3>
+          <p id="textoClienta" class="highlight-box"></p>
+
+          <h3>Texto para la agenda de tu amiga</h3>
+          <p id="textoProfesional" class="highlight-box"></p>
+        </div>
+
+        <hr style="margin:1rem 0; border:none; border-top:1px solid #eee;" />
+
+        <h3>Agenda del demo</h3>
+        <p class="small">
+          Acá tu amiga ve cómo quedaría su día: turnos por servicio con iconitos.  
+          Esto es solo en memoria, se borra al recargar.
+        </p>
+        <ul id="listaTurnos" class="lista-turnos"></ul>
+      </section>
+    </main>
+  </div>
+
+  <!-- JAVASCRIPT TODO EN EL MISMO ARCHIVO -->
+  <script>
+    const servicios = {
+      unas: { id: "unas", nombre: "Uñas", duracionHoras: 2, icono: "💅" },
+      pestanas: { id: "pestanas", nombre: "Pestañas", duracionHoras: 3, icono: "👁️" },
+      pies: { id: "pies", nombre: "Pies", duracionHoras: 2, icono: "💅🦶" }
+    };
+
+    let turnos = [];
+    let servicioSeleccionado = null;
+    let horaSeleccionada = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const cardsServicios = document.querySelectorAll(".servicio-card");
+      const inputFecha = document.getElementById("inputFecha");
+      const slotBtns = document.querySelectorAll(".slot-btn");
+      const btnReservar = document.getElementById("btnReservar");
+      const textoResumen = document.getElementById("textoResumen");
+      const textoClienta = document.getElementById("textoClienta");
+      const textoProfesional = document.getElementById("textoProfesional");
+      const bloqueMensajes = document.getElementById("bloqueMensajes");
+      const listaTurnos = document.getElementById("listaTurnos");
+
+      // Selección de servicio (uñitas / ojitos)
+      cardsServicios.forEach(card => {
+        card.addEventListener("click", () => {
+          cardsServicios.forEach(c => c.classList.remove("activo"));
+          card.classList.add("activo");
+          servicioSeleccionado = card.dataset.servicio;
+        });
+      });
+
+      // Selección de horario (cubitos)
+      slotBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (btn.classList.contains("ocupado")) return;
+          slotBtns.forEach(b => b.classList.remove("seleccionado"));
+          btn.classList.add("seleccionado");
+          horaSeleccionada = btn.dataset.hora;
+        });
+      });
+
+      // Acción de "simular turno confirmado"
+      btnReservar.addEventListener("click", () => {
+        const fechaValor = inputFecha.value;
+
+        if (!servicioSeleccionado) {
+          alert("Elegí un servicio (uñas, pestañas o pies).");
+          return;
+        }
+        if (!fechaValor) {
+          alert("Elegí una fecha.");
+          return;
+        }
+        if (!horaSeleccionada) {
+          alert("Elegí un horario (cubito).");
+          return;
+        }
+
+        const servicio = servicios[servicioSeleccionado];
+
+        // Validar día: solo martes a sábado
+        const [year, month, day] = fechaValor.split("-").map(Number);
+        const fechaObj = new Date(year, month - 1, day);
+        const diaSemana = fechaObj.getDay(); // 0=Dom,1=Lun,2=Mar,...
+
+        if (diaSemana === 0 || diaSemana === 1) {
+          alert("Solo se atiende de martes a sábado. Elegí otra fecha.");
+          return;
+        }
+
+        // Validar que ese slot no esté ocupado ya
+        const ocupado = turnos.some(t =>
+          mismaFecha(t.inicio, fechaObj) && t.slotHora === horaSeleccionada
+        );
+
+        if (ocupado) {
+          alert("Ese horario ya está ocupado para ese día. Elegí otro.");
+          return;
+        }
+
+        // Armar fechas de inicio y fin
+        const [hour, minute] = horaSeleccionada.split(":").map(Number);
+        const inicio = new Date(year, month - 1, day, hour, minute);
+        const fin = sumarHoras(inicio, servicio.duracionHoras);
+
+        const turno = {
+          servicioId: servicio.id,
+          servicioNombre: servicio.nombre,
+          icono: servicio.icono,
+          inicio,
+          fin,
+          slotHora: horaSeleccionada
+        };
+
+        turnos.push(turno);
+        turnos.sort((a, b) => a.inicio - b.inicio);
+
+        // Actualizar texto de resumen
+        const txtFechaHora = formatearFechaHora(inicio);
+        const txtHoraFin = formatearHora(fin);
+
+        textoResumen.textContent =
+          `Turno simulado: ${servicio.icono} ${servicio.nombre} el ${txtFechaHora} ` +
+          `(aprox. hasta las ${txtHoraFin}).`;
+
+        textoClienta.textContent =
+          `Hola ✨ Tu turno de ${servicio.icono} ${servicio.nombre} está reservado para el ${txtFechaHora}. ` +
+          `La sesión dura aproximadamente hasta las ${txtHoraFin}. ` +
+          `En la versión real, este mensaje solo se enviaría cuando el pago esté confirmado.`;
+
+        textoProfesional.textContent =
+          `${servicio.icono} ${servicio.nombre} — ${txtFechaHora} ` +
+          `hasta las ${txtHoraFin}. Cliente: [Nombre de la clienta]. ` +
+          `Estado interno: PAGADO (demo, solo visual).`;
+
+        bloqueMensajes.style.display = "block";
+
+        // Refrescar la agenda
+        renderizarTurnos(listaTurnos);
+
+        // Marcar slot como ocupado en la grilla (solo visual)
+        actualizarSlotsOcupados();
+      });
+    });
+
+    // ------- Helpers -------
+
+    function sumarHoras(fecha, horas) {
+      const nueva = new Date(fecha.getTime());
+      nueva.setHours(nueva.getHours() + horas);
+      return nueva;
+    }
+
+    function mismaFecha(d1, d2) {
+      return (
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate()
+      );
+    }
+
+    function formatearFechaHora(fecha) {
+      const dia = String(fecha.getDate()).padStart(2, "0");
+      const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+      const anio = fecha.getFullYear();
+      const hora = String(fecha.getHours()).padStart(2, "0");
+      const minutos = String(fecha.getMinutes()).padStart(2, "0");
+      return `${dia}/${mes}/${anio} ${hora}:${minutos}`;
+    }
+
+    function formatearHora(fecha) {
+      const h = String(fecha.getHours()).padStart(2, "0");
+      const m = String(fecha.getMinutes()).padStart(2, "0");
+      return `${h}:${m}`;
+    }
+
+    function renderizarTurnos(listaTurnos) {
+      listaTurnos.innerHTML = "";
+
+      if (turnos.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "Todavía no hay turnos cargados en este demo.";
+        listaTurnos.appendChild(li);
+        return;
+      }
+
+      turnos.forEach(t => {
+        const li = document.createElement("li");
+
+        const header = document.createElement("div");
+        header.className = "turno-header";
+
+        const iconoSpan = document.createElement("span");
+        iconoSpan.className = "icono";
+        iconoSpan.textContent = t.icono;
+
+        const tituloSpan = document.createElement("span");
+        tituloSpan.textContent = t.servicioNombre;
+
+        header.appendChild(iconoSpan);
+        header.appendChild(tituloSpan);
+
+        const fechaSpan = document.createElement("span");
+        fechaSpan.className = "turno-fecha";
+        fechaSpan.textContent =
+          `${formatearFechaHora(t.inicio)} → ${formatearHora(t.fin)}`;
+
+        const estadoSpan = document.createElement("span");
+        estadoSpan.className = "pill-estado";
+        estadoSpan.textContent = "PAGADO (demo)";
+
+        li.appendChild(header);
+        li.appendChild(fechaSpan);
+        li.appendChild(estadoSpan);
+        listaTurnos.appendChild(li);
+      });
+    }
+
+    function actualizarSlotsOcupados() {
+      const inputFecha = document.getElementById("inputFecha");
+      const fechaValor = inputFecha.value;
+      const slotBtns = document.querySelectorAll(".slot-btn");
+
+      if (!fechaValor) {
+        slotBtns.forEach(b => {
+          b.classList.remove("ocupado");
+        });
+        return;
+      }
+
+      const [year, month, day] = fechaValor.split("-").map(Number);
+      const fechaObj = new Date(year, month - 1, day);
+
+      slotBtns.forEach(btn => {
+        const hora = btn.dataset.hora;
+        const ocupado = turnos.some(t =>
+          mismaFecha(t.inicio, fechaObj) && t.slotHora === hora
+        );
+        btn.classList.toggle("ocupado", ocupado);
+        if (ocupado) btn.classList.remove("seleccionado");
+      });
+    }
+  </script>
+</body>
+</html>
